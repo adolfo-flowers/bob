@@ -1,6 +1,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-
+import 'normalize.css/normalize.css';
 import Newtab from './Newtab';
 import './index.css';
 
