@@ -33,10 +33,10 @@ export async function searchSpotify({ track, artist, album }) {
       tries += 1;
     }
   }
-
+  console.log(r.tracks.items);
   return r.tracks.items.map(({ id, name, album }) => ({
     spotifyId: id,
     name,
-    album: { spotifyId: album.id, name: album.name },
+    album: { spotifyId: album.id, name: album.name, thumbs: album.images },
   }));
 }

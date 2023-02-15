@@ -34,7 +34,7 @@ async function songChartsStreams({ uuid, startDate, endDate }) {
 export function addSoundChartsId(songs) {
   return songs.reduce(async (p, s) => {
     const acc = await p;
-    await await asyncWait();
+    await await asyncWait(10);
     return [
       ...acc,
       {
@@ -48,7 +48,7 @@ export function addSoundChartsId(songs) {
 export function addSpotifyStreamCount({ songs, startDate, endDate }) {
   return songs.reduce(async (p, s) => {
     const acc = await p;
-    await await asyncWait();
+    await await asyncWait(10);
     const streams = (
       await songChartsStreams({
         uuid: s.uuid,
