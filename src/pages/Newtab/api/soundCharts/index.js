@@ -4,14 +4,21 @@ import secrets from 'secrets';
 const rootUrl = 'https://customer.api.soundcharts.com';
 
 async function plataformSongIdToSoundChartId({ id, platform = 'spotify' }) {
+  const r = await fetch(
+    `${rootUrl}/api/v2.25/song/by-platform/${platform}/${id}`,
+    {
+      headers: {
+        'x-app-id': secrets.appId,
+        'x-api-key': secrets.apiKey,
+      },
+    }
+  );
+  if (!r.ok) {
+    return;
+  }
   const {
     object: { uuid },
-  } = await fetch(`${rootUrl}/api/v2.25/song/by-platform/${platform}/${id}`, {
-    headers: {
-      'x-app-id': secrets.appId,
-      'x-api-key': secrets.apiKey,
-    },
-  }).then((r) => r.json());
+  } = r.then((r) => r.json());
   return uuid;
 }
 
@@ -64,7 +71,7 @@ export function addSpotifyStreamCount({ songs, startDate, endDate }) {
       {
         ...s,
         streams,
-        totalStreams: streams.reduce((acc, a) => a.value + acc, 0),
+        totalStreams: streams.map((a) => a.value)[0],
       },
     ];
   }, Promise.resolve([]));
