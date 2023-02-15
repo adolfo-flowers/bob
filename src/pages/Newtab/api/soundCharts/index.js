@@ -71,7 +71,8 @@ export function addSpotifyStreamCount({ songs, startDate, endDate }) {
       {
         ...s,
         streams,
-        totalStreams: streams.map((a) => a.value)[0],
+        totalStreams:
+          streams.map((a) => a.value)[0] - streams.map((a) => a.value)[1],
       },
     ];
   }, Promise.resolve([]));
