@@ -18,7 +18,7 @@ async function plataformSongIdToSoundChartId({ id, platform = 'spotify' }) {
   }
   const {
     object: { uuid },
-  } = r.then((r) => r.json());
+  } = await r.json();
   return uuid;
 }
 
