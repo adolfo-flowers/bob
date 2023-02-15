@@ -66,13 +66,14 @@ export function addSpotifyStreamCount({ songs, startDate, endDate }) {
       date,
       value: plots[0].value,
     }));
+    const st = streams.map((a) => a.value);
+
     return [
       ...acc,
       {
         ...s,
         streams,
-        totalStreams:
-          streams.map((a) => a.value)[0] - streams.map((a) => a.value)[1],
+        totalStreams: st[0] - st[streams.length - 1],
       },
     ];
   }, Promise.resolve([]));
