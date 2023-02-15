@@ -4,51 +4,66 @@ import secrets from 'secrets';
 const rootUrl = 'https://customer.api.soundcharts.com';
 
 async function plataformSongIdToSoundChartId({ id, platform = 'spotify' }) {
-  const r = await fetch(
-    `${rootUrl}/api/v2.25/song/by-platform/${platform}/${id}`,
-    {
+  let r;
+  try {
+    r = await fetch(`${rootUrl}/api/v2.25/song/by-platform/${platform}/${id}`, {
       headers: {
         'x-app-id': secrets.appId,
         'x-api-key': secrets.apiKey,
       },
-    }
-  );
-  if (!r.ok) {
-    return;
+    });
+    const {
+      object: { uuid },
+    } = await r.json();
+    return uuid;
+  } catch (error) {
+    console.log('Sound charts uuid error', await r.text());
+    console.log('Sound charts uuid error', error);
+    throw error;
   }
-  const {
-    object: { uuid },
-  } = await r.json();
-  return uuid;
 }
 
 async function songChartsStreams({ uuid, startDate, endDate }) {
-  const startDateq = startDate ? `startDate=${startDate}` : '';
-  const endDateq = endDate ? `endDate=${endDate}` : '';
-  const { items } = await fetch(
-    `${rootUrl}/api/v2.24/song/${uuid}/spotify/stream?${startDateq}&${endDateq}`,
-    {
-      headers: {
-        'x-app-id': secrets.appId,
-        'x-api-key': secrets.apiKey,
-      },
+  let r;
+  try {
+    const startDateq = startDate ? `startDate=${startDate}` : '';
+    const endDateq = endDate ? `endDate=${endDate}` : '';
+    r = await fetch(
+      `${rootUrl}/api/v2.24/song/${uuid}/spotify/stream?${startDateq}&${endDateq}`,
+      {
+        headers: {
+          'x-app-id': secrets.appId,
+          'x-api-key': secrets.apiKey,
+        },
+      }
+    );
+    if (!r.ok) {
+      throw await r.json();
     }
-  ).then((r) => r.json());
 
-  return items;
+    return (await r.json()).items;
+  } catch (error) {
+    console.log('SONG chart streams error', error);
+    throw error;
+  }
 }
 
 export function addSoundChartsId(songs) {
   return songs.reduce(async (p, s) => {
     const acc = await p;
     await await asyncWait(10);
-    return [
-      ...acc,
-      {
-        ...s,
-        uuid: await plataformSongIdToSoundChartId({ id: s.spotifyId }),
-      },
-    ];
+    try {
+      const uuid = await plataformSongIdToSoundChartId({ id: s.spotifyId });
+      return [
+        ...acc,
+        {
+          ...s,
+          uuid,
+        },
+      ];
+    } catch (error) {
+      return [...acc, { ...s, error: error }];
+    }
   }, Promise.resolve([]));
 }
 
@@ -56,25 +71,27 @@ export function addSpotifyStreamCount({ songs, startDate, endDate }) {
   return songs.reduce(async (p, s) => {
     const acc = await p;
     await await asyncWait(10);
-    const streams = (
-      await songChartsStreams({
+    try {
+      const result = await songChartsStreams({
         uuid: s.uuid,
         startDate,
         endDate,
-      })
-    ).map(({ date, plots }) => ({
-      date,
-      value: plots[0].value,
-    }));
-    const st = streams.map((a) => a.value);
+      });
 
-    return [
-      ...acc,
-      {
-        ...s,
-        streams,
-        totalStreams: st[0] - st[streams.length - 1],
-      },
-    ];
+      const streams = result.map(({ date, plots }) => ({
+        date,
+        value: plots[0].value,
+      }));
+      return [
+        ...acc,
+        {
+          ...s,
+          streams,
+        },
+      ];
+    } catch (error) {
+      console.log('strem count error', error);
+      return [...acc, { ...s, error: error }];
+    }
   }, Promise.resolve([]));
 }

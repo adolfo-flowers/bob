@@ -47,17 +47,29 @@ const Newtab = () => {
                   d.format('YYYY-MM-DD')
                 );
                 //console.log(startDate, endDate);
-
+                const spotifySearchResult = await searchSpotify({
+                  track,
+                  artist,
+                  album,
+                });
+                const uuidResult = await addSoundChartsId(spotifySearchResult);
+                const songsWithUUID = uuidResult.filter((s) => !s.error);
+                const uuidErrors = uuidResult.filter((s) => s.error);
+                if (uuidErrors.length) {
+                  console.log(uuidErrors);
+                }
                 const results = await addSpotifyStreamCount({
-                  songs: await addSoundChartsId(
-                    await searchSpotify({ track, artist, album })
-                  ),
+                  songs: songsWithUUID,
                   startDate,
                   endDate,
                 });
-                dispatch(actionSetSearchResults(results));
+                const streamCountErrors = results.filter((r) => r.error);
+                const validResults = results.filter((r) => !r.error);
+                if (streamCountErrors.length) {
+                  console.log(streamCountErrors);
+                }
+                dispatch(actionSetSearchResults(validResults));
                 setInitLoading(false);
-                console.log(results);
               }}
             />
           </section>
