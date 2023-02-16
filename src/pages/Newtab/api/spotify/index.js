@@ -20,6 +20,7 @@ export async function searchSpotify({ track, artist, album }) {
 
   let tries = 0;
   let r;
+  let errors = [];
   while (tries < 3) {
     try {
       const token = await spotify.getLoginToken({
@@ -27,16 +28,16 @@ export async function searchSpotify({ track, artist, album }) {
         client_secret: secrets.clientSecret,
       });
       r = await searchSpotifyApi({ token, query });
-      break;
+      return r.tracks.items.map(({ id, name, album }) => ({
+        spotifyId: id,
+        name,
+        album: { spotifyId: album.id, name: album.name, thumbs: album.images },
+      }));
     } catch (e) {
       console.log(e);
+      errors.push(e);
       tries += 1;
     }
+    throw errors;
   }
-  console.log(r.tracks.items);
-  return r.tracks.items.map(({ id, name, album }) => ({
-    spotifyId: id,
-    name,
-    album: { spotifyId: album.id, name: album.name, thumbs: album.images },
-  }));
 }

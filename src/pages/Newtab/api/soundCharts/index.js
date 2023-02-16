@@ -6,18 +6,27 @@ const rootUrl = 'https://customer.api.soundcharts.com';
 async function plataformSongIdToSoundChartId({ id, platform = 'spotify' }) {
   let r;
   try {
+    const cachedUuid = localStorage.getItem(`${platform}:${id}`);
+    if (cachedUuid) {
+      return cachedUuid;
+    }
     r = await fetch(`${rootUrl}/api/v2.25/song/by-platform/${platform}/${id}`, {
       headers: {
         'x-app-id': secrets.appId,
         'x-api-key': secrets.apiKey,
       },
     });
+    const json = await r.json();
+    if (!r.ok) {
+      throw json;
+    }
     const {
       object: { uuid },
-    } = await r.json();
+    } = json;
+    localStorage.setItem(`${platform}:${id}`, uuid);
     return uuid;
   } catch (error) {
-    console.log('Sound charts uuid error', await r.text());
+    console.log('Sound charts uuid error', r.statusText);
     console.log('Sound charts uuid error', error);
     throw error;
   }
@@ -26,6 +35,12 @@ async function plataformSongIdToSoundChartId({ id, platform = 'spotify' }) {
 async function songChartsStreams({ uuid, startDate, endDate }) {
   let r;
   try {
+    const cachedStreams = localStorage.getItem(
+      `${uuid}:${startDate}:${endDate}`
+    );
+    if (cachedStreams) {
+      return JSON.parse(cachedStreams);
+    }
     const startDateq = startDate ? `startDate=${startDate}` : '';
     const endDateq = endDate ? `endDate=${endDate}` : '';
     r = await fetch(
@@ -40,8 +55,12 @@ async function songChartsStreams({ uuid, startDate, endDate }) {
     if (!r.ok) {
       throw await r.json();
     }
-
-    return (await r.json()).items;
+    const streams = (await r.json()).items;
+    localStorage.setItem(
+      `${uuid}:${startDate}:${endDate}`,
+      JSON.stringify(streams)
+    );
+    return streams;
   } catch (error) {
     console.log('SONG chart streams error', error);
     throw error;
