@@ -177,12 +177,6 @@ const Newtab = () => {
               </Space>
             </section>
           </Col>
-
-          <Col span={16}>
-            <section style={{ padding: '30px' }}>
-              <Chart data={data} />
-            </section>
-          </Col>
         </Row>
       </Content>
     </Layout>
