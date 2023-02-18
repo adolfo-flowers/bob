@@ -38,8 +38,9 @@ const DataTable = ({ data }) => {
   const byYear = _.mapValues(data.totalStreamsByYearAndMonth, (year) => {
     return _.reduce(
       year,
-      (result, month) =>
-        month.reduce((acc, day) => day.value + acc, 0) + result,
+      (result, month) => {
+        return month[0].value - month[month.length - 1].value + result;
+      },
       0
     );
   });

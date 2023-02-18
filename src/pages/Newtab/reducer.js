@@ -3,9 +3,26 @@ import { addSpotifyStreamCount, addSoundChartsId } from './api/soundCharts';
 import { searchSpotify } from './api/spotify';
 
 function getDateSegments({ startDate, endDate }) {
-  if (!startDate && !endDate) {
-    return [{ startDate, endDate }];
+  const start = startDate?.format('YYYY-MM-DD').split('');
+  const end = endDate?.format('YYYY-MM-DD').split('');
+  if (start && end) {
+    start[8] = '0';
+    start[9] = '1';
+    end[8] = '2';
+    end[9] = '8';
   }
+  console.log('DATES:', start, end);
+  return [
+    {
+      startDate: '2022-12-01',
+      endDate: '2022-12-30',
+    },
+    {
+      startDate: '2022-01-01',
+      endDate: '2022-01-30',
+    },
+  ];
+
   //  Passing in month will check month and year
   const isNinityDayPeriod = endDate
     .substract(90, 'days')
@@ -85,13 +102,7 @@ function addTotalStreamsForPeriod(songs) {
 
 function addTotalStreamsByYearAndMonth(songs) {
   return songs.map((song) => {
-    const totalStreamsByday = song.streams
-      .map((s, i, c) => ({
-        ...s,
-        value: s.value - c[i + 1]?.value,
-      }))
-      .filter((s) => !isNaN(s.value));
-    const totalStreamsByYearAndMonth = _(totalStreamsByday)
+    const totalStreamsByYearAndMonth = _(song.streams)
       .groupBy(({ date }) => new Date(date).getFullYear())
       .mapValues((d) =>
         _.groupBy(d, ({ date }) =>
@@ -101,7 +112,7 @@ function addTotalStreamsByYearAndMonth(songs) {
         )
       )
       .value();
-    console.log(totalStreamsByYearAndMonth);
+    console.log('!!!!!', totalStreamsByYearAndMonth);
     return { ...song, totalStreamsByYearAndMonth };
   });
 }
@@ -121,6 +132,7 @@ export const searchAction = async (setInitLoading, dispatch, state, data) => {
     return;
   }
   setInitLoading(true);
+
   dispatch(actionSetMessages({ reset: true }));
   const spotifySearchResult = await spotify({ track, artist, album, dispatch });
   console.log('Spotify serach results', spotifySearchResult);
