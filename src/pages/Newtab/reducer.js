@@ -45,7 +45,7 @@ export const searchAction = async (setInitLoading, dispatch, state, data) => {
         messages: [
           {
             error: {
-              errors: [{ message: 'No found on spotify' }],
+              errors: [{ message: 'Not found on spotify' }],
             },
           },
         ],
@@ -113,6 +113,7 @@ function addTotalStreamsByYearAndMonth(songs) {
 
 const handlers = {
   set_messages: (state, { payload: { messages, reset } }) => {
+    console.log(messages);
     return {
       ...state,
       messages: reset
@@ -121,7 +122,7 @@ const handlers = {
             ...state.messages,
             ...messages.map((m) => ({
               track: m.name,
-              message: m.error.errors[0].message,
+              message: (m.error.errors || [])[0]?.message,
             })),
           ],
     };

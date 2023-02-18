@@ -100,7 +100,7 @@ export function addSpotifyStreamCount({ songs, startDate, endDate }) {
         ...acc,
         {
           ...s,
-          streams,
+          streams: [...(s.streams || []), ...streams],
         },
       ];
     } catch (error) {
