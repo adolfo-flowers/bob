@@ -1,41 +1,53 @@
-import * as spotify from './token.js';
-import secrets from 'secrets';
+import * as spotify from './token';
+import { config } from '../../../../../config';
 
-function searchSpotifyApi({ token, query }) {
-  const url = `https://api.spotify.com/v1/search?q=${query}&type=album,track`;
-
-  return fetch(url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  }).then((r) => r.json());
-}
+let token;
 
 export async function searchSpotify({ track, artist, album }) {
   const trackq = track ? `track:${track}` : '';
   const artistq = artist ? ` artist:${artist}` : '';
   const albumq = album ? ` album:${album}` : '';
   const query = encodeURIComponent(`${trackq}${artistq}${albumq}`);
+  const url = `https://api.spotify.com/v1/search?q=${query}&type=album,track`;
 
   let tries = 0;
   let r;
   let errors = [];
+
+  if (!token) {
+    token = await spotify.getLoginToken({
+      client_id: config.spotify.clientId,
+      client_secret: config.spotify.clientSecret,
+    });
+  }
+
   while (tries < 3) {
     try {
-      const token = await spotify.getLoginToken({
-        client_id: secrets.clientId,
-        client_secret: secrets.clientSecret,
+      r = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
       });
-      r = await searchSpotifyApi({ token, query });
-      return r.tracks.items.map(({ id, name, album }) => ({
+      if (!r.ok) {
+        console.log(r);
+        throw Error('Spotify error');
+      }
+      const { tracks } = await r.json();
+      console.log('dbg', tracks);
+      return tracks.items.map(({ id, name, album, artists }) => ({
         spotifyId: id,
-        name,
+        trackName: name,
+        artist: artists.map((a) => a.name).join(','),
         album: { spotifyId: album.id, name: album.name, thumbs: album.images },
       }));
     } catch (e) {
-      console.log(e);
       errors.push(e);
+      console.log('HEy', e);
+      token = await spotify.getLoginToken({
+        client_id: config.spotify.clientId,
+        client_secret: config.spotify.clientSecret,
+      });
       tries += 1;
     }
     throw errors;

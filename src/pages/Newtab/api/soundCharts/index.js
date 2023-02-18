@@ -1,5 +1,5 @@
 import { asyncWait, cache } from '../../lib';
-import secrets from 'secrets';
+import { config } from '../../../../../config';
 
 const rootUrl = 'https://customer.api.soundcharts.com';
 
@@ -12,8 +12,8 @@ async function plataformSongIdToSoundChartId({ id, platform = 'spotify' }) {
     }
     r = await fetch(`${rootUrl}/api/v2.25/song/by-platform/${platform}/${id}`, {
       headers: {
-        'x-app-id': secrets.appId,
-        'x-api-key': secrets.apiKey,
+        'x-app-id': config.soundCharts.appId,
+        'x-api-key': config.soundCharts.apiKey,
       },
     });
     const json = await r.json();
@@ -45,8 +45,8 @@ async function songChartsStreams({ uuid, startDate, endDate }) {
       `${rootUrl}/api/v2.24/song/${uuid}/spotify/stream?${startDateq}&${endDateq}`,
       {
         headers: {
-          'x-app-id': secrets.appId,
-          'x-api-key': secrets.apiKey,
+          'x-app-id': config.soundCharts.appId,
+          'x-api-key': config.soundCharts.apiKey,
         },
       }
     );
@@ -81,26 +81,35 @@ export function addSoundChartsId(songs) {
   }, Promise.resolve([]));
 }
 
-export function addSpotifyStreamCount({ songs, startDate, endDate }) {
+export function addSpotifyStreamCount({ songs, dateSegments }) {
   return songs.reduce(async (p, s) => {
     const acc = await p;
-    await await asyncWait(10);
+    await await asyncWait(1);
     try {
-      const result = await songChartsStreams({
-        uuid: s.uuid,
-        startDate,
-        endDate,
-      });
+      const result = await dateSegments.reduce(
+        async (p, { startDate, endDate }) => {
+          const acum = await p;
+          const streams = await songChartsStreams({
+            uuid: s.uuid,
+            startDate,
+            endDate,
+          });
+          return [
+            ...acum,
+            ...streams.map(({ date, plots }) => ({
+              date,
+              value: plots[0].value,
+            })),
+          ];
+        },
+        []
+      );
 
-      const streams = result.map(({ date, plots }) => ({
-        date,
-        value: plots[0].value,
-      }));
       return [
         ...acc,
         {
           ...s,
-          streams: [...(s.streams || []), ...streams],
+          streams: [...(s.streams || []), ...result],
         },
       ];
     } catch (error) {
