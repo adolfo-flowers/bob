@@ -76,7 +76,7 @@ const SearchForm = ({ onSubmit = Function.prototype }) => (
     </Form.Item>
     <Form.Item type="flex" justify="center" align="middle">
       <Button style={{ marginTop: '20px' }} type="primary" htmlType="submit">
-        Search
+        Buscar
       </Button>
     </Form.Item>
   </Form>
