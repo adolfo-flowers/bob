@@ -7,40 +7,22 @@ import { searchSpotify } from './api/spotify';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
-function getDateSegments({ startDate, endDate }) {
-  const start = startDate?.format('YYYY-MM-DD').split('');
-  const end = endDate?.format('YYYY-MM-DD').split('');
-  if (start && end) {
-    start[8] = '0';
-    start[9] = '1';
-    end[8] = '2';
-    end[9] = '8';
+
+function getDateSegments(dates) {
+  const [startYear, endYear] = dates;
+  if (!startYear && !endYear) {
+    return [{ startDate: undefined, endDate: undefined }];
   }
-  console.log('DATES:', start, end);
   return [
     {
-      startDate: '2022-12-01',
-      endDate: '2022-12-30',
+      startDate: `${startYear}-01-01`,
+      endDate: `${startYear}-01-28`,
     },
     {
-      startDate: '2022-01-01',
-      endDate: '2022-01-30',
+      startDate: `${endYear}-12-01`,
+      endDate: `${endYear}-12-31`,
     },
   ];
-
-  //  Passing in month will check month and year
-  const isNinityDayPeriod = endDate
-    .substract(90, 'days')
-    .isSameOrAfter(startDate, 'month');
-  console.log('IS 90 day period?', isNinityDayPeriod);
-  if (isNinityDayPeriod) {
-    return [
-      {
-        startDate: startDate.format('YYYY-MM-DD'),
-        endDate: endDate.format('YYYY-MM-DD'),
-      },
-    ];
-  }
 }
 
 async function spotify({ track, artist, album, dispatch }) {
@@ -66,7 +48,7 @@ function handleSoundChartsErrors({ result, dispatch }) {
   const valid = result.filter((s) => !s.error);
   const errors = result
     .filter((s) => s.error)
-    .map((s) => [{ message: s.error.errors[0].message }]);
+    .map((s) => console.log(s) || [{ message: s?.error?.errors[0]?.message }]);
   if (errors.length) {
     dispatch(actionSetMessages({ messages: errors }));
     console.log('errors', errors);
@@ -83,8 +65,8 @@ async function hidrateWithSoundChartsData({
     result: await addSoundChartsId(spotifySearchResult),
     dispatch,
   });
-  const [startDate, endDate] = normalizedDate(dates);
-  const dateSegments = getDateSegments({ startDate, endDate });
+  const dateSegments = getDateSegments(dates);
+  console.log('!!!!!!!!!!!!!!!!!!!!', dateSegments);
   const songsWithStreams = handleSoundChartsErrors({
     result: await addSpotifyStreamCount({
       songs: songsWithUUID,
@@ -105,31 +87,14 @@ function addTotalStreamsForPeriod(songs) {
   });
 }
 
-const months = [
-  'Enero',
-  'Febrero',
-  'Marzo',
-  'Abril',
-  'Mayo',
-  'Junio',
-  'Julio',
-  'Agosto',
-  'Septiembre',
-  'Octubre',
-  'Noviembre',
-  'Diciembre',
-];
-
 function addTotalStreamsByYearAndMonth(songs) {
   return songs.map((song) => {
-    const totalStreamsByYearAndMonth = _(song.streams)
+    const streamsByDate = _(song.streams)
       .groupBy(({ date }) => dayjs.tz(date).year())
-      .mapValues((d) =>
-        _.groupBy(d, ({ date }) => months[dayjs.tz(date).month()])
-      )
+      .mapValues((d) => _.groupBy(d, ({ date }) => dayjs.tz(date).month()))
       .value();
-    console.log('Streams by year month', totalStreamsByYearAndMonth);
-    return { ...song, totalStreamsByYearAndMonth };
+    console.log('Streams by year month', streamsByDate);
+    return { ...song, streamsByDate };
   });
 }
 
@@ -143,10 +108,12 @@ function formatTrackData(tracks) {
 }
 
 export const searchAction = async (setInitLoading, dispatch, state, data) => {
-  const { artist, track, album, dates = [] } = data;
+  const { artist, track, album, endYear, startYear } = data;
   if (!artist && !track && !album) {
     return;
   }
+  const dates = [startYear?.year(), endYear?.year()];
+
   setInitLoading(true);
 
   dispatch(actionSetMessages({ reset: true }));

@@ -3,6 +3,21 @@ import _ from 'lodash';
 import dayjs from 'dayjs';
 import { Table, Avatar, List, Skeleton, Collapse } from 'antd';
 
+const monthNames = [
+  'Enero',
+  'Febrero',
+  'Marzo',
+  'Abril',
+  'Mayo',
+  'Junio',
+  'Julio',
+  'Agosto',
+  'Septiembre',
+  'Octubre',
+  'Noviembre',
+  'Diciembre',
+];
+
 const { Panel } = Collapse;
 const ListItem = ({ artist, trackName, album, totalStreams, thumbUrl }) => (
   <List.Item actions={[<a key="list-loadmore-edit">export csv</a>]}>
@@ -32,35 +47,51 @@ const DataTable = ({ data }) => {
       dataIndex: 'streams',
     },
     {
-      title: 'months',
-      dataIndex: 'months',
+      title: 'Fechas',
+      dataIndex: 'period',
     },
   ];
-  const byYear = _.mapValues(data.totalStreamsByYearAndMonth, (year) => {
-    return year.Diciembre[0].value - year.Enero[year.Enero.length - 1].value;
+
+  const byYear = _.mapValues(data.streamsByDate, (year) => {
+    const months = Object.keys(year).sort((a, b) => a - b);
+    const firstMonth = months[0];
+    const lastMonth = months[months.length - 1];
+
+    return (
+      year[lastMonth][0]?.value -
+      year[firstMonth][year[firstMonth]?.length - 1]?.value
+    );
   });
 
   return (
     <Table
       columns={columns}
-      dataSource={Object.keys(byYear).map((k, i) => {
-        const months = Object.keys(data.totalStreamsByYearAndMonth[k]);
-        const firstMonth = months[months.length - 1];
-        const lastMonth = months[0];
+      dataSource={Object.keys(byYear).map((year, i) => {
+        const months = Object.keys(data.streamsByDate[year]).sort(
+          (a, b) => a - b
+        );
+        const firstMonth = months[0];
+        const lastMonth = months[months.length - 1];
+        const firstDate = dayjs
+          .tz(
+            data.streamsByDate[year][firstMonth][
+              data.streamsByDate[year][firstMonth].length - 1
+            ].date
+          )
+          .format('DD-MM-YYYY');
+        const lastDate = dayjs
+          .tz(
+            data.streamsByDate[year][lastMonth][
+              data.streamsByDate[year][lastMonth].length - 1
+            ].date
+          )
+          .format('DD-MM-YYYY');
+
         return {
           key: i,
-          date: `${k} ${firstMonth}-${lastMonth}`,
-          streams: byYear[k].toLocaleString(),
-          months: _.reduce(
-            data.totalStreamsByYearAndMonth[k],
-            (acc, days, month) =>
-              month === 'Enero'
-                ? `First day: ${dayjs.tz(days[0].date).format('MM-DD')}, ${acc}`
-                : `Last day: ${dayjs
-                    .tz(days[days.length - 1].date)
-                    .format('MM-DD')}, ${acc}`,
-            ''
-          ),
+          date: `${year} ${monthNames[firstMonth]}-${monthNames[lastMonth]}`,
+          streams: byYear[year].toLocaleString(),
+          period: `Desde ${firstDate} hasta ${lastDate}`,
         };
       })}
     />

@@ -1,6 +1,5 @@
 import React from 'react';
 import { Button, Form, Input, DatePicker } from 'antd';
-const { RangePicker } = DatePicker;
 
 const onFinishFailed = (errorInfo) => {
   console.log('Failed:', errorInfo);
@@ -56,24 +55,24 @@ const SearchForm = ({ onSubmit = Function.prototype }) => (
     >
       <Input />
     </Form.Item>
-    {/* <Form.Item
-        type="flex"
-        justify="center"
-        align="middle"
-        label={<label style={{ color: 'white' }}>Periodo en meses</label>}
-        name="dates"
-        >
-        <RangePicker picker="month" />
-        </Form.Item>
-        <Form.Item
-        type="flex"
-        justify="center"
-        align="middle"
-        label={<label style={{ color: 'white' }}>Periodo en años</label>}
-        name="dates"
-        >
-        <RangePicker picker="year" />
-        </Form.Item> */}
+    <Form.Item
+      type="flex"
+      justify="center"
+      align="middle"
+      label={<label style={{ color: 'white' }}>Desde</label>}
+      name="startYear"
+    >
+      <DatePicker picker="year" />
+    </Form.Item>
+    <Form.Item
+      type="flex"
+      justify="center"
+      align="middle"
+      label={<label style={{ color: 'white' }}>Hasta</label>}
+      name="endYear"
+    >
+      <DatePicker picker="year" />
+    </Form.Item>
     <Form.Item type="flex" justify="center" align="middle">
       <Button style={{ marginTop: '20px' }} type="primary" htmlType="submit">
         Buscar
