@@ -18,7 +18,7 @@ const SearchForm = ({ onSubmit = Function.prototype }) => (
     style={{ display: 'flex', flexDirection: 'column', marginTop: '70px' }}
     name="basic"
     layout="vertical"
-    labelCol={{ span: 8 }}
+    labelCol={{ span: 16 }}
     wrapperCol={{ span: 16 }}
     initialValues={{ remember: true }}
     onFinish={onSubmit}
