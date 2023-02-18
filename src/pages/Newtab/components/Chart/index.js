@@ -34,6 +34,30 @@ export const options = {
   },
 };
 
-export default function App({ data }) {
+export default function App({ state }) {
+  const labels =
+    ((state?.searchResults || [])[0] || {})?.streams?.map(({ date }) => date) ||
+    [];
+  const d =
+    ((state?.searchResults || [])[0] || {})?.streams?.map(
+      ({ value }) => value
+    ) || [];
+  const data = {
+    labels: labels?.reverse(),
+    datasets: [
+      {
+        label: 'Streams',
+        data: d?.reverse(),
+        borderColor: 'rgb(255, 99, 132)',
+        backgroundColor: 'rgba(255, 99, 132, 0.5)',
+      },
+      /* {
+       *   label: 'Dataset 2',
+       *   data: labels.map(() => 4),
+       *   borderColor: 'rgb(53, 162, 235)',
+       *   backgroundColor: 'rgba(53, 162, 235, 0.5)',
+       * }, */
+    ],
+  };
   return <Line options={options} data={data} />;
 }

@@ -1,4 +1,4 @@
-import { asyncWait } from '../../lib';
+import { asyncWait, cache } from '../../lib';
 import secrets from 'secrets';
 
 const rootUrl = 'https://customer.api.soundcharts.com';
@@ -6,7 +6,7 @@ const rootUrl = 'https://customer.api.soundcharts.com';
 async function plataformSongIdToSoundChartId({ id, platform = 'spotify' }) {
   let r;
   try {
-    const cachedUuid = localStorage.getItem(`${platform}:${id}`);
+    const cachedUuid = cache.getItem(`${platform}:${id}`);
     if (cachedUuid) {
       return cachedUuid;
     }
@@ -23,7 +23,7 @@ async function plataformSongIdToSoundChartId({ id, platform = 'spotify' }) {
     const {
       object: { uuid },
     } = json;
-    localStorage.setItem(`${platform}:${id}`, uuid);
+    cache.setItem(`${platform}:${id}`, uuid);
     return uuid;
   } catch (error) {
     console.log('Sound charts uuid error', r.statusText);
@@ -35,11 +35,9 @@ async function plataformSongIdToSoundChartId({ id, platform = 'spotify' }) {
 async function songChartsStreams({ uuid, startDate, endDate }) {
   let r;
   try {
-    const cachedStreams = localStorage.getItem(
-      `${uuid}:${startDate}:${endDate}`
-    );
+    const cachedStreams = cache.getItem(`${uuid}:${startDate}:${endDate}`);
     if (cachedStreams) {
-      return JSON.parse(cachedStreams);
+      return cachedStreams;
     }
     const startDateq = startDate ? `startDate=${startDate}` : '';
     const endDateq = endDate ? `endDate=${endDate}` : '';
@@ -56,10 +54,7 @@ async function songChartsStreams({ uuid, startDate, endDate }) {
       throw await r.json();
     }
     const streams = (await r.json()).items;
-    localStorage.setItem(
-      `${uuid}:${startDate}:${endDate}`,
-      JSON.stringify(streams)
-    );
+    cache.setItem(`${uuid}:${startDate}:${endDate}`, streams);
     return streams;
   } catch (error) {
     console.log('SONG chart streams error', error);
@@ -109,7 +104,7 @@ export function addSpotifyStreamCount({ songs, startDate, endDate }) {
         },
       ];
     } catch (error) {
-      console.log('strem count error', error);
+      console.log('stream count error', error);
       return [...acc, { ...s, error: error }];
     }
   }, Promise.resolve([]));
