@@ -1,5 +1,6 @@
 import React from 'react';
 import _ from 'lodash';
+import dayjs from 'dayjs';
 import { Table, Avatar, List, Skeleton, Collapse } from 'antd';
 
 const { Panel } = Collapse;
@@ -36,13 +37,7 @@ const DataTable = ({ data }) => {
     },
   ];
   const byYear = _.mapValues(data.totalStreamsByYearAndMonth, (year) => {
-    return _.reduce(
-      year,
-      (result, month) => {
-        return month[0].value - month[month.length - 1].value + result;
-      },
-      0
-    );
+    return year.Diciembre[0].value - year.Enero[year.Enero.length - 1].value;
   });
 
   return (
@@ -58,7 +53,12 @@ const DataTable = ({ data }) => {
           streams: byYear[k].toLocaleString(),
           months: _.reduce(
             data.totalStreamsByYearAndMonth[k],
-            (acc, days, month) => `Days in ${month}: ${days.length}, ${acc}`,
+            (acc, days, month) =>
+              month === 'Enero'
+                ? `First day: ${dayjs.tz(days[0].date).format('MM-DD')}, ${acc}`
+                : `Last day: ${dayjs
+                    .tz(days[days.length - 1].date)
+                    .format('MM-DD')}, ${acc}`,
             ''
           ),
         };

@@ -1,7 +1,12 @@
 import _ from 'lodash';
+import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
 import { addSpotifyStreamCount, addSoundChartsId } from './api/soundCharts';
 import { searchSpotify } from './api/spotify';
 
+dayjs.extend(utc);
+dayjs.extend(timezone);
 function getDateSegments({ startDate, endDate }) {
   const start = startDate?.format('YYYY-MM-DD').split('');
   const end = endDate?.format('YYYY-MM-DD').split('');
@@ -100,19 +105,30 @@ function addTotalStreamsForPeriod(songs) {
   });
 }
 
+const months = [
+  'Enero',
+  'Febrero',
+  'Marzo',
+  'Abril',
+  'Mayo',
+  'Junio',
+  'Julio',
+  'Agosto',
+  'Septiembre',
+  'Octubre',
+  'Noviembre',
+  'Diciembre',
+];
+
 function addTotalStreamsByYearAndMonth(songs) {
   return songs.map((song) => {
     const totalStreamsByYearAndMonth = _(song.streams)
-      .groupBy(({ date }) => new Date(date).getFullYear())
+      .groupBy(({ date }) => dayjs.tz(date).year())
       .mapValues((d) =>
-        _.groupBy(d, ({ date }) =>
-          new Intl.DateTimeFormat('en-US', { month: 'long' }).format(
-            new Date(date)
-          )
-        )
+        _.groupBy(d, ({ date }) => months[dayjs.tz(date).month()])
       )
       .value();
-    console.log('!!!!!', totalStreamsByYearAndMonth);
+    console.log('Streams by year month', totalStreamsByYearAndMonth);
     return { ...song, totalStreamsByYearAndMonth };
   });
 }
@@ -158,7 +174,7 @@ export const actionSetMessages = (errors) => ({
 
 const handlers = {
   set_messages: (state, { payload: { messages, reset } }) => {
-    console.log(messages);
+    console.log('MEssages', messages);
     return {
       ...state,
       messages: reset ? [] : [...state.messages, ...messages],
