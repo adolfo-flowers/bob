@@ -21,20 +21,32 @@ function getDateSegments(dates) {
   if (!startYear && !endYear) {
     return [{ startDate: undefined, endDate: undefined }];
   }
-  return d.reduce(
-    (acc, [startMonth, endMonth]) => [
-      ...acc,
-      {
-        startDate: `${startYear}-${startMonth}-01`,
-        endDate: `${startYear}-${endMonth}-28`,
-      },
-      {
-        startDate: `${endYear}-${startMonth}-01`,
-        endDate: `${endYear}-${endMonth}-28`,
-      },
-    ],
-    []
-  );
+  return d
+    .reduce(
+      (acc, [startMonth, endMonth]) => [
+        ...acc,
+        {
+          startDate: `${startYear}-${startMonth}-01`,
+          endDate: `${startYear}-${endMonth}-${new Date(
+            Number(startYear),
+            Number(endMonth),
+            0
+          ).getDate()}`,
+        },
+        startYear === endYear
+          ? undefined
+          : {
+              startDate: `${endYear}-${startMonth}-01`,
+              endDate: `${endYear}-${endMonth}-${new Date(
+                Number(endYear),
+                Number(endMonth),
+                0
+              ).getDate()}`,
+            },
+      ],
+      []
+    )
+    .filter((d) => d);
 }
 
 async function spotify({ track, artist, album, dispatch }) {
