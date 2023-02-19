@@ -77,11 +77,7 @@ const DataTable = ({ data }) => {
         const firstMonth = months[0];
         const lastMonth = months[months.length - 1];
         const firstDate = dayjs
-          .tz(
-            data.streamsByDate[year][firstMonth][
-              data.streamsByDate[year][firstMonth].length - 1
-            ].date
-          )
+          .tz(data.streamsByDate[year][firstMonth][0].date)
           .format('DD-MM-YYYY');
         const lastDate = dayjs
           .tz(
