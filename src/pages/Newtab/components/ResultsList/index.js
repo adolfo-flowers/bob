@@ -52,15 +52,19 @@ const DataTable = ({ data }) => {
     },
   ];
 
-  const byYear = _.mapValues(data.streamsByDate, (year) => {
-    const months = Object.keys(year).sort((a, b) => a - b);
-    const firstMonth = months[0];
-    const lastMonth = months[months.length - 1];
+  const byYear = _.mapValues(data.streamsByDate, (year, key) => {
+    const nextYear = data.streamsByDate[Number(key) + 1];
+    console.log('next year', nextYear);
+    const monthsCurrent = Object.keys(year).sort((a, b) => a - b);
+    const monthsNext = nextYear && Object.keys(nextYear).sort((a, b) => a - b);
+    const firstMonth = monthsCurrent[0];
+    const lastMonth = monthsCurrent[monthsCurrent.length - 1];
+    console.log(monthsCurrent.lenth);
+    const lastMonthLastDay = nextYear
+      ? nextYear[monthsNext[0]][0]?.value
+      : year[lastMonth][year[lastMonth].length - 1]?.value;
 
-    return (
-      year[lastMonth][year[lastMonth].length - 1]?.value -
-      year[firstMonth][0]?.value
-    );
+    return lastMonthLastDay - year[firstMonth][0]?.value;
   });
 
   return (
