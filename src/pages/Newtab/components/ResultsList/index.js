@@ -1,7 +1,7 @@
 import React from 'react';
 import _ from 'lodash';
 import dayjs from 'dayjs';
-import { Table, Avatar, List, Skeleton, Collapse } from 'antd';
+import { Table, Avatar, List, Skeleton, Collapse, Tabs } from 'antd';
 
 const monthNames = [
   'Enero',
@@ -36,7 +36,59 @@ const ListItem = ({ artist, trackName, album, totalStreams, thumbUrl }) => (
   </List.Item>
 );
 
-const DataTable = ({ data }) => {
+const DataByMonthTable = ({ year }) => {
+  const columns = [
+    {
+      title: 'Periodo',
+      dataIndex: 'date',
+    },
+    {
+      title: 'Streams',
+      dataIndex: 'streams',
+    },
+    {
+      title: 'Fechas dia mes año',
+      dataIndex: 'period',
+    },
+  ];
+
+  const byMonth = _.mapValues(year, (month, key) => {
+    const nextMonth = year[Number(key) + 1];
+
+    const firstDay = month[0]?.value;
+    const lastDay = nextMonth
+      ? nextMonth[0]?.value
+      : month[month.length - 1]?.value;
+
+    return lastDay - firstDay;
+  });
+
+  return (
+    <Table
+      columns={columns}
+      dataSource={Object.keys(year).map((monthNumber, i) => {
+        const month = year[monthNumber];
+        /* const firstDay = month[0];
+           const lastDay = month[month.length - 1]; */
+        const firstDate = dayjs.tz(month[0].date).format('DD-MM-YYYY');
+        const lastDate = dayjs
+          .tz(month[month.length - 1].date)
+          .format('DD-MM-YYYY');
+        const numberOfDays = dayjs
+          .tz(month[month.length - 1].date)
+          .diff(dayjs.tz(month[0].date), 'day');
+        return {
+          key: i,
+          date: `${monthNames[monthNumber]} - ${numberOfDays} días`,
+          streams: byMonth[monthNumber]?.toLocaleString(),
+          period: `Desde ${firstDate} hasta ${lastDate}`,
+        };
+      })}
+    />
+  );
+};
+
+const DataByYearTable = ({ data }) => {
   const columns = [
     {
       title: 'Periodo',
@@ -54,12 +106,12 @@ const DataTable = ({ data }) => {
 
   const byYear = _.mapValues(data.streamsByDate, (year, key) => {
     const nextYear = data.streamsByDate[Number(key) + 1];
-    console.log('next year', nextYear);
+
     const monthsCurrent = Object.keys(year).sort((a, b) => a - b);
     const monthsNext = nextYear && Object.keys(nextYear).sort((a, b) => a - b);
     const firstMonth = monthsCurrent[0];
     const lastMonth = monthsCurrent[monthsCurrent.length - 1];
-    console.log(monthsCurrent.lenth);
+
     const lastMonthLastDay = nextYear
       ? nextYear[monthsNext[0]][0]?.value
       : year[lastMonth][year[lastMonth].length - 1]?.value;
@@ -117,7 +169,29 @@ const ResultsList = ({ initLoading, searchResults }) => {
               thumbUrl: (result?.album?.thumbs[2] || {}).url,
             })}
           >
-            <DataTable data={result} />
+            <Tabs
+              defaultActiveKey="1"
+              items={[
+                result,
+                ...Object.keys(result.streamsByDate).map((k) => ({
+                  ...result.streamsByDate[k],
+                  year: k,
+                })),
+              ].map((data, i) => {
+                const year = data.year;
+                if (i) {
+                  delete data.year;
+                }
+                const id = result?.uuid + year;
+                return {
+                  label: !i ? 'By year' : year,
+                  key: id,
+                  children: i
+                    ? DataByMonthTable({ year: data })
+                    : DataByYearTable({ data }),
+                };
+              })}
+            />
           </Panel>
         </Collapse>
       )}
