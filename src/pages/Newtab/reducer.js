@@ -103,7 +103,7 @@ async function hidrateWithSoundChartsData({
 
 function addTotalStreamsForPeriod(songs) {
   return songs.map((s) => {
-    const streams = s.streams.map((s) => s.value);
+    const streams = s.streams.map((s) => s.value).sort((a, b) => a - b);
 
     const perodTotalStreams = streams[streams.length - 1] - streams[0];
     return { ...s, perodTotalStreams };
