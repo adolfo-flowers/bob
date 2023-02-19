@@ -49,6 +49,7 @@ export async function searchSpotify({ track, artist, album }) {
         client_secret: config.spotify.clientSecret,
       });
       tries += 1;
+      continue;
     }
     throw errors;
   }

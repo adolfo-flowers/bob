@@ -16,10 +16,18 @@ function getDateSegments(dates) {
   return [
     {
       startDate: `${startYear}-01-01`,
-      endDate: `${startYear}-01-28`,
+      endDate: `${startYear}-02-28`,
     },
     {
-      startDate: `${endYear}-12-01`,
+      startDate: `${startYear}-02-28`,
+      endDate: `${startYear}-03-30`,
+    },
+    {
+      startDate: `${endYear}-09-01`,
+      endDate: `${endYear}-10-30`,
+    },
+    {
+      startDate: `${endYear}-11-01`,
       endDate: `${endYear}-12-31`,
     },
   ];

@@ -47,7 +47,7 @@ const DataTable = ({ data }) => {
       dataIndex: 'streams',
     },
     {
-      title: 'Fechas',
+      title: 'Fechas dia mes año',
       dataIndex: 'period',
     },
   ];
