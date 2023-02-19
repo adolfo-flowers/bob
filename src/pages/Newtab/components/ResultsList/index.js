@@ -58,8 +58,8 @@ const DataTable = ({ data }) => {
     const lastMonth = months[months.length - 1];
 
     return (
-      year[lastMonth][0]?.value -
-      year[firstMonth][year[firstMonth]?.length - 1]?.value
+      year[lastMonth][year[lastMonth].length - 1]?.value -
+      year[firstMonth][0]?.value
     );
   });
 

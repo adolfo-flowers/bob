@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import { asyncWait, cache } from '../../lib';
 import { config } from '../../../../../config';
 
@@ -110,7 +111,12 @@ export function addSpotifyStreamCount({ songs, dateSegments }) {
         ...acc,
         {
           ...s,
-          streams: [...(s.streams || []), ...result],
+          streams: [
+            ...(s.streams || []),
+            ...result.sort(
+              (a, b) => dayjs.tz(a.date).unix() - dayjs.tz(b.date).unix()
+            ),
+          ],
         },
       ];
     } catch (error) {
