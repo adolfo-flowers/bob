@@ -1,6 +1,11 @@
-import { Layout, theme } from 'antd';
 import React, { useState, useReducer } from 'react';
+import {
+  ExclamationCircleOutlined,
+  AreaChartOutlined,
+} from '@ant-design/icons';
+import { Tabs, Layout, theme } from 'antd';
 import SearchForm from './components/SearchForm';
+import MessageList from './components/MessageList';
 import ResultsList from './components/ResultsList';
 import reducer, { searchAction } from './reducer';
 
@@ -49,9 +54,34 @@ const App = () => {
               background: colorBgContainer,
             }}
           >
-            <ResultsList
-              initLoading={initLoading}
-              searchResults={state?.searchResults}
+            <Tabs
+              defaultActiveKey="1"
+              items={[AreaChartOutlined, ExclamationCircleOutlined].map(
+                (Icon, i) => {
+                  const id = String(i + 1);
+                  return {
+                    label: (
+                      <span>
+                        <Icon
+                          style={
+                            i && state?.messages?.length ? { color: 'red' } : {}
+                          }
+                        />
+                        {!i ? 'Results' : 'Warnings'}
+                      </span>
+                    ),
+                    key: id,
+                    children: !i ? (
+                      <ResultsList
+                        initLoading={initLoading}
+                        searchResults={state?.searchResults}
+                      />
+                    ) : (
+                      <MessageList messages={state?.messages} />
+                    ),
+                  };
+                }
+              )}
             />
           </div>
         </Content>

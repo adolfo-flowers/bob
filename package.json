@@ -13,6 +13,7 @@
     "prettier": "prettier --write '**/*.{js,jsx,ts,tsx,json,css,scss,md}'"
   },
   "dependencies": {
+    "@ant-design/icons": "^5.0.1",
     "antd": "^5.2.1",
     "chart.js": "^4.2.1",
     "dayjs": "^1.11.7",

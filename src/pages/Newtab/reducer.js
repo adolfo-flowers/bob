@@ -42,7 +42,13 @@ async function spotify({ track, artist, album, dispatch }) {
   });
 
   if (!spotifySearchResult || !spotifySearchResult.length) {
-    dispatch(actionSetMessages({ messages: ['Not found on spotify'] }));
+    dispatch(
+      actionSetMessages({
+        messages: [
+          { name: track, album, artist, message: 'Not found on spotify' },
+        ],
+      })
+    );
   }
   return spotifySearchResult;
 }
@@ -56,7 +62,15 @@ function handleSoundChartsErrors({ result, dispatch }) {
   const valid = result.filter((s) => !s.error);
   const errors = result
     .filter((s) => s.error)
-    .map((s) => console.log(s) || [{ message: s?.error?.errors[0]?.message }]);
+    .map(
+      (s) =>
+        console.log(s) || {
+          message: s?.error?.errors[0]?.message,
+          name: s?.trackName,
+          artist: s?.artist,
+          album: s?.album?.name,
+        }
+    );
   if (errors.length) {
     dispatch(actionSetMessages({ messages: errors }));
     console.log('errors', errors);
