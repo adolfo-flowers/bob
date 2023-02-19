@@ -94,7 +94,7 @@ export function addSpotifyStreamCount({ songs, dateSegments }) {
             startDate,
             endDate,
           });
-          console.log('got streams', streams);
+
           return [
             ...acum,
             ...streams.map(({ date, plots }) => ({
