@@ -79,7 +79,7 @@ const DataByMonthTable = ({ year }) => {
           .diff(dayjs.tz(month[0].date), 'day');
         return {
           key: i,
-          date: `${monthNames[monthNumber]} - ${numberOfDays} días`,
+          date: `${monthNames[monthNumber]} - ${numberOfDays + 1} días`,
           streams: byMonth[monthNumber]?.toLocaleString(),
           period: `Desde ${firstDate} hasta ${lastDate}`,
         };
