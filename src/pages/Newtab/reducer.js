@@ -8,29 +8,33 @@ import { searchSpotify } from './api/spotify';
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
+const d = [
+  ['01', '02'],
+  ['03', '04'],
+  ['05', '06'],
+  ['07', '08'],
+  ['09', '10'],
+  ['11', '12'],
+];
 function getDateSegments(dates) {
   const [startYear, endYear] = dates;
   if (!startYear && !endYear) {
     return [{ startDate: undefined, endDate: undefined }];
   }
-  return [
-    {
-      startDate: `${startYear}-01-01`,
-      endDate: `${startYear}-02-28`,
-    },
-    {
-      startDate: `${startYear}-02-28`,
-      endDate: `${startYear}-03-30`,
-    },
-    {
-      startDate: `${endYear}-09-01`,
-      endDate: `${endYear}-10-30`,
-    },
-    {
-      startDate: `${endYear}-11-01`,
-      endDate: `${endYear}-12-31`,
-    },
-  ];
+  return d.reduce(
+    (acc, [startMonth, endMonth]) => [
+      ...acc,
+      {
+        startDate: `${startYear}-${startMonth}-01`,
+        endDate: `${startYear}-${endMonth}-28`,
+      },
+      {
+        startDate: `${endYear}-${startMonth}-01`,
+        endDate: `${endYear}-${endMonth}-28`,
+      },
+    ],
+    []
+  );
 }
 
 async function spotify({ track, artist, album, dispatch }) {
@@ -62,15 +66,12 @@ function handleSoundChartsErrors({ result, dispatch }) {
   const valid = result.filter((s) => !s.error);
   const errors = result
     .filter((s) => s.error)
-    .map(
-      (s) =>
-        console.log(s) || {
-          message: s?.error?.errors[0]?.message,
-          name: s?.trackName,
-          artist: s?.artist,
-          album: s?.album?.name,
-        }
-    );
+    .map((s) => ({
+      message: s?.error?.errors[0]?.message,
+      name: s?.trackName,
+      artist: s?.artist,
+      album: s?.album?.name,
+    }));
   if (errors.length) {
     dispatch(actionSetMessages({ messages: errors }));
     console.log('errors', errors);
