@@ -31,7 +31,7 @@ const ListItem = ({ artist, trackName, album, totalStreams, thumbUrl }) => (
           </div>
         }
       />
-      <div>Artist: Total streams for period {totalStreams}</div>
+      <div>Total streams for period {totalStreams}</div>
     </Skeleton>
   </List.Item>
 );
