@@ -39,7 +39,7 @@ const ListItem = ({ artist, trackName, album, totalStreams, thumbUrl }) => (
 const DataTable = ({ data }) => {
   const columns = [
     {
-      title: 'Period',
+      title: 'Periodo',
       dataIndex: 'date',
     },
     {
